@@ -1,6 +1,22 @@
 import numpy as np
 
-def mwup(eta, M):
+def winnow(epsilon, A, l):
+    """
+    INPUT:
+    epsilon -> float (margin)
+    A       -> np.ndarray (2-dimensional, each row on feature vector)
+    l       -> np.ndarray (1-dimensional, labels)
+    OUTPUT:
+    x       -> np.ndarray (1-dimensional, solution vector, distribution)
+    """
+    rho = abs(A).max()
+    M = np.diag(l) * A / rho
+    eta = epsilon / 2 / rho
+    x = mwup(eta, M, winnow=True, A=A)
+    return x
+
+
+def mwup(eta, M, winnow=False, A=np.empty(0)):
     """
     INPUT:
     eta     -> float (in interval [0,0.5])
@@ -13,6 +29,9 @@ def mwup(eta, M):
     w = np.ones(n)
     p = w / n
     for m in M:
+        if winnow:
+            current = np.matmul(A, p)
+            if (current >= 0).all(): break
         i = random_decision(p)      # for demonstrating purposes
         w, p = update_rule(eta, w, m)
     return p
