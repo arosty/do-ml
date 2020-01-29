@@ -1,19 +1,32 @@
 import numpy as np
 
-def winnow(epsilon, A, l):
+
+def update_rule(eta, w, m):
     """
     INPUT:
-    epsilon -> float (margin)
-    A       -> np.ndarray (2-dimensional, each row on feature vector)
-    l       -> np.ndarray (1-dimensional, labels)
+    eta     -> float (in interval [0,0.5])
+    w       -> np.ndarray (1-dimensional, weights)
+    m       -> np.ndarray (same dimension as w, costs or gains)
     OUTPUT:
-    x       -> np.ndarray (1-dimensional, solution vector, distribution)
+    w       -> np.ndarray (1-dimensional, updated weights)
+    p       -> np.ndarray (same dimension as w, new distribution)
     """
-    rho = abs(A).max()
-    M = np.diag(l) * A / rho
-    eta = epsilon / 2 / rho
-    x = mwup(eta, M, winnow=True, A=A)
-    return x
+    w = (1 - eta * m) * w
+    phi = w.sum()
+    p = w / phi
+    return w, p
+
+
+def random_decision(p):
+    """
+    INPUT:
+    p       -> np.ndarray (1-dimensional, distribution)
+    OUTPUT:
+    i       -> int (randomly chosen decision)
+    """
+    n = p.size
+    i = np.random.choice(n, 1, p=p)[0]
+    return i
 
 
 def mwup(eta, M, winnow=False, A=np.empty(0)):
@@ -37,29 +50,27 @@ def mwup(eta, M, winnow=False, A=np.empty(0)):
     return p
 
 
-def random_decision(p):
+def winnow(epsilon, A, l):
     """
     INPUT:
-    p       -> np.ndarray (1-dimensional, distribution)
+    epsilon -> float (margin)
+    A       -> np.ndarray (2-dimensional, each row on feature vector)
+    l       -> np.ndarray (1-dimensional, labels, all values 1 or -1)
     OUTPUT:
-    i       -> int (randomly chosen decision)
+    x       -> np.ndarray (1-dimensional, solution vector, distribution)
     """
-    n = p.size
-    i = np.random.choice(n, 1, p=p)[0]
-    return i
+    rho = abs(A).max()
+    M = np.matmul(np.diag(l), A) / rho
+    eta = epsilon / 2 / rho
+    x = mwup(eta, M, winnow=True, A=A)
+    return x
 
 
-def update_rule(eta, w, m):
-    """
-    INPUT:
-    eta     -> float (in interval [0,0.5])
-    w       -> np.ndarray (1-dimensional, weights)
-    m       -> np.ndarray (same dimension as w, costs or gains)
-    OUTPUT:
-    w       -> np.ndarray (1-dimensional, updated weights)
-    p       -> np.ndarray (same dimension as w, new distribution)
-    """
-    w = (1 - eta * m) * w
-    phi = w.sum()
-    p = w / phi
-    return w, p
+# example:
+epsilon = .1
+A = np.array([[1, 2, 3], [3, 4, 5], [1, 0, 1], [2, 2, 9]])
+l = np.array([-1, -1, 1, -1])
+
+x = winnow(epsilon, A, l)
+print("SOLUTION:")
+print(x)
