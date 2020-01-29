@@ -1,5 +1,5 @@
 import numpy as np
-
+import sys
 
 def update_rule(eta, w, m):
     """
@@ -66,11 +66,28 @@ def winnow(epsilon, A, l):
     return x
 
 
+def read_data():
+    input_data = sys.stdin
+    for line in input_data:
+        if line[0] == '#':
+            values = line.split()[1:4]
+            n, k = [np.int(i) for i in values[:2]]
+            epsilon = np.float64(values[2])
+            A = np.empty([k,n], dtype=np.float64)
+            j = 0
+        else:
+            values = line.split()
+            A[j] = [np.float64(i) for i in values]
+            j += 1
+    return A, epsilon
+
+
 # example:
 epsilon = .1
 A = np.array([[1, 2, 3], [3, 4, 5], [1, 0, 1], [2, 2, 9]])
 l = np.array([-1, -1, 1, -1])
 
-x = winnow(epsilon, A, l)
-print("SOLUTION:")
-print(x)
+# x = winnow(epsilon, A, l)
+# print("SOLUTION:")
+# print(x)
+
